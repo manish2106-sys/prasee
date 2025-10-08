@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PRASEE SERVICE AND SOLUTION - Pioneering the Future of Technology</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for premium look and smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+        body {
+            background-color: #0d111c; /* Deep Space Black */
+            color: #e5e7eb; /* Light Gray Text */
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Define primary accent color for gradients and highlights */
+        .accent-color {
+            color: #06b6d4; /* Cyan 500 */
+        }
+        .bg-accent-gradient {
+            background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%); /* Cyan to Blue */
+        }
+        .service-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+        }
+        .service-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(6, 182, 212, 0.3), 0 8px 10px -6px rgba(6, 182, 212, 0.3);
+        }
+        /* Custom Keyframe for subtle hero shimmer/pulsation */
+        @keyframes subtle-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.85; }
+        }
+        .hero-title {
+            animation: subtle-pulse 5s ease-in-out infinite;
+        }
+    </style>
+    <!-- Lucide Icons (Inline SVGs) -->
+    <script>
+        // Function to create a simple Lucide-style icon (Inline SVG)
+        function createIcon(name, classes) {
+            const icons = {
+                // Circular Logo concept: Abstract P/S within a dynamic loop
+                'LogoCircle': `<svg class="w-full h-full" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10" stroke="#06b6d4" stroke-width="2.5" fill="none"/>
+                    <path d="M8 12s3 1 4 4 4-4 4-4" stroke="#3b82f6" stroke-width="3" />
+                </svg>`,
+                'Code': `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>`,
+                'BrainCircuit': `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a2 2 0 0 0-2 2v.8a2 2 0 0 0 1 1.7l1 .6c1 .6 1 2.3 0 2.9l-1 .6a2 2 0 0 0-1 1.7v.8a2 2 0 0 0 2 2h4l4.4-3.5a2 2 0 0 0 0-3l-4.4-3.5H12Z"></path><path d="M12 22a2 2 0 0 1 2-2h-4l-4.4 3.5a2 2 0 0 1 0-3l4.4-3.5h4a2 2 0 0 1 2 2v.8a2 2 0 0 1-1 1.7l-1 .6c-1 .6-1 2.3 0 2.9l1 .6a2 2 0 0 1 1 1.7v.8a2 2 0 0 1-2 2Z"></path></svg>`,
+                'Drone': `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.9 2h2.2a2 2 0 0 0 2-2V.9a2 2 0 0 0-2 2H10.9a2 2 0 0 0-2-2V1.9a2 2 0 0 0 2 2Z"></path><path d="M10.9 20h2.2a2 2 0 0 0 2-2v-.1a2 2 0 0 0-2 2H10.9a2 2 0 0 0-2 2V19.9a2 2 0 0 0 2 2Z"></path><path d="M4 10.9v2.2a2 2 0 0 0 2 2H5.9a2 2 0 0 0 2-2V10.9a2 2 0 0 0-2-2H4.1a2 2 0 0 0 2 2Z"></path><path d="M20 10.9v2.2a2 2 0 0 0 2 2h-.1a2 2 0 0 0-2-2V10.9a2 2 0 0 0-2-2H19.9a2 2 0 0 0 2 2Z"></path><path d="M22 14c-1.3-1.3-3.2-2.3-5-2.6V10c0-1.7-1.3-3-3-3H10c-1.7 0-3 1.3-3 3v1.4C5.2 11.7 3.3 12.7 2 14"></path><path d="M10 7V5.2"></path><path d="M14 7V5.2"></path><path d="M7 10H5.2"></path><path d="M17 10H18.8"></path></svg>`,
+                'LayoutGrid': `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect></svg>`,
+                'School': `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v14"></path><path d="M12 2L2 7l10 5 10-5z"></path><path d="M12 16v6"></path><path d="M8 12h8"></path></svg>`,
+                'Phone': `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2 2h-1a17 17 0 0 1-15-15v-1a2 2 0 0 1 2-2h3l3.5 3.5a1.5 1.5 0 0 1 0 2.1l-2.4 2.4a1 1 0 0 0 0 1.4l.7.7a1 1 0 0 0 1.4 0l2.4-2.4a1.5 1.5 0 0 1 2.1 0L17 14h3a2 2 0 0 1 2 2z"></path></svg>`,
+                'Mail': `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="m3 7 9 6 9-6"></path></svg>`,
+                // WhatsApp SVG (Filled)
+                'WhatsApp': `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="text-white"><path d="M12.04 2c-5.45 0-9.91 4.46-9.91 9.91 0 1.63.4 3.2 1.17 4.6l-1.22 4.45 4.56-1.2A9.91 9.91 0 0 0 12.04 2zm5.72 13.52c-.14-.24-.59-.39-1.24-.71-.6-.28-1.04-.42-1.24-.45-.2-.04-.43-.04-.66.3-.23.34-.89 1.05-1.09 1.27-.2.23-.41.25-.76.08-.36-.18-1.44-.53-2.74-1.68-1.02-.9-1.72-2.03-1.92-2.38-.2-.34-.02-.53.18-.73.18-.18.4-.42.6-.63.2-.21.27-.39.42-.64.15-.24.08-.45-.04-.64-.12-.2-.66-.5-1.05-.75-.38-.25-.83-.3-.83-.72s.59-1.57.81-1.8c.2-.23.46-.28.66-.28.2 0 .44 0 .66.02.21.02.56.07.82.3.26.2.37.47.58 1.13.2 1.5.88 2.52 1.48 2.76.6.23 1.01.2 1.39.12.38-.07.66-.46.85-.79.19-.34.33-.52.51-.62.18-.08.57-.16 1.09.28.52.44.81 1.25.81 1.25.04.09.04.16.02.32 0 .09-.23.27-.42.47z"/></svg>`,
+            };
+            return `<span class="${classes}">${icons[name] || ''}</span>`;
+        }
+    </script>
+</head>
+<body>
+
+    <!-- Navigation Bar -->
+    <header class="sticky top-0 z-50 bg-[#0d111c]/95 backdrop-blur-sm border-b border-gray-800">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-3 flex justify-between items-center">
+            <!-- Logo -->
+            <a href="#" class="flex items-center space-x-3 text-2xl font-bold tracking-tight text-white">
+                <div class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-900 p-1"
+                     title="PRASEE Logo"
+                     aria-label="PRASEE SERVICE AND SOLUTION Logo">
+                    <!-- Logo Circle SVG -->
+                    <script>document.write(createIcon('LogoCircle', 'w-full h-full'));</script>
+                </div>
+                <span>PRASEE</span>
+            </a>
+
+            <!-- Navigation Links (Hidden on mobile, shown on large screens) -->
+            <nav class="hidden lg:flex space-x-8">
+                <a href="#solutions" class="text-gray-300 hover:text-accent-color transition duration-300 font-medium">Solutions</a>
+                <a href="#webdev" class="text-gray-300 hover:text-accent-color transition duration-300 font-medium">Web & App Dev</a>
+                <a href="#impact" class="text-gray-300 hover:text-accent-color transition duration-300 font-medium">Social Impact</a>
+                <a href="#contact" class="text-gray-300 hover:text-accent-color transition duration-300 font-medium">Contact</a>
+            </nav>
+
+            <!-- CTA Buttons -->
+            <div class="hidden sm:flex space-x-3 items-center">
+                <!-- NEW: WhatsApp Button -->
+                <a href="https://wa.me/917260828588" target="_blank" rel="noopener noreferrer" 
+                   class="flex items-center space-x-2 text-white bg-green-600 px-4 py-2 rounded-xl text-sm font-semibold shadow-lg hover:bg-green-500 transition duration-300 transform hover:scale-105">
+                    <script>document.write(createIcon('WhatsApp', 'w-4 h-4'));</script>
+                    <span>Connect with us</span>
+                </a>
+
+                <!-- Existing CTA -->
+                <a href="#contact" class="bg-accent-gradient text-white px-5 py-2 rounded-xl text-sm font-semibold shadow-lg hover:shadow-cyan-500/50 transition duration-300 transform hover:scale-105">
+                    Start Your Project
+                </a>
+            </div>
+
+
+            <!-- Mobile Menu Button (Hamburger) - Placeholder -->
+            <button class="lg:hidden text-gray-300 hover:text-accent-color focus:outline-none p-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><line x1="4" x2="20" y1="12" y2="12"></line><line x1="4" x2="20" y1="6" y2="6"></line><line x1="4" x2="20" y1="18" y2="18"></line></svg>
+            </button>
+        </div>
+    </header>
+
+    <main>
+        <!-- Hero Section -->
+        <section id="hero" class="relative overflow-hidden pt-20 pb-28 sm:pt-32 sm:pb-40 text-center">
+            <!-- Subtle background grid/pattern for high-tech feel -->
+            <div class="absolute inset-0 opacity-10 pointer-events-none">
+                <div class="w-full h-full bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScxMjAnIGhlaWdodD0nMTIwJyB2aWV3Qm94PScwIDAgMTIwIDEyMCc+PHBhdGggZmlsbD0nI2YwZjBmMHgnIGQ9J00wIDAgNjAgNjAgMTAwIDYwIDEyMCA0MCAxMjAgMjAgNjAgODAgMCA0MCcwIDAgIDYwIDYwIDgwIDYwIDYwIDQwIC00MCAtNDAgMCAtNDAnICc+PC9wYXRoPjwvc3ZnPg==')]"></div>
+            </div>
+
+            <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <h1 class="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tighter leading-tight hero-title">
+                    Pioneering the Future with <span class="bg-accent-gradient bg-clip-text text-transparent">Intelligent Solutions.</span>
+                </h1>
+                <p class="mt-6 text-xl text-gray-400 max-w-3xl mx-auto">
+                    We deliver bespoke technology—from high-performance AI Agents and Robotics to custom software and web platforms—designed for excellence and impact.
+                </p>
+                <div class="mt-10 flex justify-center space-x-4">
+                    <a href="#solutions" class="bg-accent-gradient text-white px-8 py-3 rounded-xl text-lg font-semibold shadow-2xl shadow-cyan-500/40 transition duration-500 transform hover:scale-[1.02]">
+                        Explore Our Solutions
+                    </a>
+                    <a href="#impact" class="text-gray-300 bg-gray-800 border border-gray-700 px-8 py-3 rounded-xl text-lg font-semibold hover:bg-gray-700 transition duration-300 transform hover:scale-[1.02]">
+                        Our Social Impact
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Solutions/Services Grid -->
+        <section id="solutions" class="py-20 sm:py-28">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+                <h2 class="text-center text-4xl sm:text-5xl font-bold tracking-tight mb-4">
+                    Our Core <span class="text-accent-color">Expertise</span>
+                </h2>
+                <p class="text-center text-gray-400 mb-16 max-w-2xl mx-auto">
+                    We specialize in disruptive technologies that propel our clients ahead, from deep-level automation to physical-world robotics.
+                </p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+
+                    <!-- Card 1: Custom Software -->
+                    <div class="service-card p-8 bg-gray-900 rounded-2xl border border-gray-800">
+                        <div class="text-accent-color w-12 h-12 mb-4 p-2 bg-gray-800 rounded-full">
+                            <script>document.write(createIcon('Code', 'w-full h-full'));</script>
+                        </div>
+                        <h3 class="text-2xl font-semibold mb-3 text-white">Custom Software</h3>
+                        <p class="text-gray-400">Bespoke, scalable, and secure software applications built from the ground up to perfectly match your complex business requirements.</p>
+                    </div>
+
+                    <!-- Card 2: AI & Automation -->
+                    <div class="service-card p-8 bg-gray-900 rounded-2xl border border-gray-800">
+                        <div class="text-accent-color w-12 h-12 mb-4 p-2 bg-gray-800 rounded-full">
+                            <script>document.write(createIcon('BrainCircuit', 'w-full h-full'));</script>
+                        </div>
+                        <h3 class="text-2xl font-semibold mb-3 text-white">AI Agents & Automation</h3>
+                        <p class="text-gray-400">Implement intelligent automation and AI agents for workflow optimization, predictive analytics, and next-generation decision-making.</p>
+                    </div>
+
+                    <!-- Card 3: Drone Tech & Robotics -->
+                    <div class="service-card p-8 bg-gray-900 rounded-2xl border border-gray-800">
+                        <div class="text-accent-color w-12 h-12 mb-4 p-2 bg-gray-800 rounded-full">
+                            <script>document.write(createIcon('Drone', 'w-full h-full'));</script>
+                        </div>
+                        <h3 class="text-2xl font-semibold mb-3 text-white">Drone & Robotics Tech</h3>
+                        <p class="text-gray-400">Developing and integrating sophisticated hardware and software solutions for industrial drones, robotics, and complex automation systems.</p>
+                    <p>
+                    </div>
+
+                    <!-- Card 4: Web & App Development -->
+                    <div id="webdev" class="service-card p-8 bg-gray-900 rounded-2xl border border-gray-800">
+                        <div class="text-accent-color w-12 h-12 mb-4 p-2 bg-gray-800 rounded-full">
+                            <script>document.write(createIcon('LayoutGrid', 'w-full h-full'));</script>
+                        </div>
+                        <h3 class="text-2xl font-semibold mb-3 text-white">Website & App Dev</h3>
+                        <p class="text-gray-400">Creating high-performance, aesthetically pleasing, and scalable digital interfaces for web, mobile, and enterprise applications.</p>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- Social Impact Section -->
+        <section id="impact" class="py-20 sm:py-28 bg-gray-900/50">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+                <div class="md:flex items-center gap-12">
+                    <div class="md:w-1/2">
+                        <h2 class="text-4xl sm:text-5xl font-bold tracking-tight mb-4">
+                            Technology for <span class="bg-accent-gradient bg-clip-text text-transparent">Social Good</span>
+                        </h2>
+                        <p class="text-gray-400 text-lg mb-6">
+                            Our commitment extends beyond commercial solutions. We dedicate resources to empower the next generation and non-profit organizations.
+                        </p>
+                        <ul class="space-y-4 text-gray-300">
+                            <li class="flex items-start">
+                                <span class="flex-shrink-0 mr-3 text-green-400 mt-1">
+                                    <script>document.write(createIcon('School', 'w-6 h-6'));</script>
+                                </span>
+                                <div>
+                                    <span class="font-semibold text-white">Free Software Development:</span> We provide custom software tools for NGOs and government schools at no cost.
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="flex-shrink-0 mr-3 text-green-400 mt-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 22.5A2.5 2.5 0 0 0 9 20h6a2.5 2.5 0 0 0 2.5-2.5V7.5A2.5 2.5 0 0 0 15.5 5h-7A2.5 2.5 0 0 0 6 7.5v.5"></path><path d="M9 13h6"></path><path d="M9 17h6"></path><path d="M9 9h6"></path></svg>
+                                </span>
+                                <div>
+                                    <span class="font-semibold text-white">Comprehensive Training:</span> Expert training in technology and digital skills for educators and staff.
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="md:w-1/2 mt-12 md:mt-0 flex justify-center items-center">
+                        <!-- Placeholder for visual impact / image -->
+                        <div class="w-full max-w-md h-64 bg-gray-800 rounded-2xl flex items-center justify-center border border-gray-700 p-8 shadow-2xl shadow-cyan-900/50">
+                            <p class="text-gray-500 text-center text-xl">
+                                Visual Placeholder: Impact & Community Focus
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA to Contact -->
+        <section class="py-16">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl text-center">
+                <div class="bg-accent-gradient p-8 sm:p-12 rounded-3xl shadow-3xl shadow-cyan-500/30">
+                    <h3 class="text-3xl sm:text-4xl font-bold text-white mb-4">
+                        Ready to Build the Future?
+                    </h3>
+                    <p class="text-lg text-white/90 mb-8">
+                        Let's discuss how PRASEE SERVICE AND SOLUTION can turn your vision into a robust, high-performance reality.
+                    </p>
+                    <a href="#contact" class="inline-flex bg-white text-[#0d111c] px-10 py-3 rounded-xl text-lg font-bold shadow-lg transition duration-300 transform hover:scale-105 hover:shadow-xl">
+                        Get Started Today
+                    </a>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer / Contact Section -->
+    <footer id="contact" class="bg-gray-900 pt-16 pb-8 border-t border-gray-800">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12">
+                <!-- Brand Info -->
+                <div class="col-span-1 md:col-span-2">
+                    <a href="#" class="flex items-center space-x-3 text-2xl font-bold tracking-tight text-white mb-4">
+                        <div class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-800 p-1">
+                            <script>document.write(createIcon('LogoCircle', 'w-full h-full'));</script>
+                        </div>
+                        <span>PRASEE</span>
+                    </a>
+                    <p class="text-gray-400 text-sm max-w-md">
+                        Pioneering excellence in Custom Software, AI, Robotics, and Digital Development with a deep commitment to ethical technology and social contribution.
+                    </p>
+                </div>
+
+                <!-- Quick Links -->
+                <div>
+                    <h4 class="text-lg font-semibold text-white mb-4">Quick Links</h4>
+                    <ul class="space-y-3 text-sm">
+                        <li><a href="#solutions" class="text-gray-400 hover:text-accent-color transition duration-300">Our Solutions</a></li>
+                        <li><a href="#webdev" class="text-gray-400 hover:text-accent-color transition duration-300">Web & App Development</a></li>
+                        <li><a href="#impact" class="text-gray-400 hover:text-accent-color transition duration-300">Social Impact</a></li>
+                    </ul>
+                </div>
+
+                <!-- Contact Info -->
+                <div>
+                    <h4 class="text-lg font-semibold text-white mb-4">Connect With Us</h4>
+                    <ul class="space-y-3 text-sm">
+                        <!-- Phone Number 1 -->
+                        <li class="flex items-center">
+                            <script>document.write(createIcon('Phone', 'w-4 h-4 mr-2 text-accent-color'));</script>
+                            <a href="tel:+917260828588" class="text-gray-400 hover:text-white transition duration-300">+91 7260828588</a>
+                        </li>
+                        <!-- NEW Phone Number 2 -->
+                        <li class="flex items-center">
+                            <script>document.write(createIcon('Phone', 'w-4 h-4 mr-2 text-accent-color'));</script>
+                            <a href="tel:+919431535537" class="text-gray-400 hover:text-white transition duration-300">+91 9431535537</a>
+                        </li>
+                        <!-- NEW Phone Number 3 -->
+                        <li class="flex items-center">
+                            <script>document.write(createIcon('Phone', 'w-4 h-4 mr-2 text-accent-color'));</script>
+                            <a href="tel:+919424375766" class="text-gray-400 hover:text-white transition duration-300">+91 9424375766</a>
+                        </li>
+                        <!-- Email -->
+                        <li class="flex items-center">
+                            <script>document.write(createIcon('Mail', 'w-4 h-4 mr-2 text-accent-color'));</script>
+                            <a href="mailto:manish@aadhaarassociation.org" class="text-gray-400 hover:text-white transition duration-300">manish@aadhaarassociation.org</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="mt-12 pt-8 border-t border-gray-800 text-center">
+                <p class="text-gray-500 text-sm">&copy; 2025 PRASEE SERVICE AND SOLUTION. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>
