@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Aadhaar Digital Literacy — Admin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen p-6">
+  <div class="max-w-5xl mx-auto">
+    <header class="mb-6 text-center">
+      <h1 class="text-3xl font-bold text-blue-700">Aadhaar Digital Literacy — Admin</h1>
+      <p class="text-sm text-gray-600 mt-1">Admin user: <code>admin</code> / <code>12345678</code></p>
+      <div class="mt-3">
+        <a href="center.html" class="text-sm underline text-indigo-600">Open Center Login Page (center.html)</a>
+      </div>
+    </header>
+
+    <!-- Login -->
+    <section id="loginSection" class="bg-white p-6 rounded shadow max-w-md mx-auto">
+      <h2 class="text-xl font-semibold mb-3">Admin Login</h2>
+      <input id="adminUser" placeholder="Username" class="w-full border p-2 mb-3 rounded" />
+      <input id="adminPass" placeholder="Password" type="password" class="w-full border p-2 mb-3 rounded" />
+      <div class="flex gap-2">
+        <button id="loginBtn" class="flex-1 bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Login</button>
+        <button id="openCenterPage" class="flex-1 bg-gray-200 py-2 rounded hover:bg-gray-300">Center Page</button>
+      </div>
+    </section>
+
+    <!-- Dashboard -->
+    <section id="dashboard" class="hidden bg-white p-6 rounded shadow mt-6">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-semibold">Admin Dashboard</h2>
+        <div class="flex gap-2">
+          <button id="downloadAll" class="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700">Download ALL (Excel)</button>
+          <button id="logoutBtn" class="bg-gray-300 px-3 py-1 rounded hover:bg-gray-400">Logout</button>
+        </div>
+      </div>
+
+      <div class="mb-4 border p-4 rounded">
+        <h3 class="font-semibold mb-2">Create Center</h3>
+        <div class="flex gap-2">
+          <input id="centerIdInput" placeholder="Center ID" class="flex-1 border p-2 rounded" />
+          <input id="centerPassInput" placeholder="Center Password" class="flex-1 border p-2 rounded" />
+          <button id="createCenterBtn" class="bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700">Create</button>
+        </div>
+      </div>
+
+      <div id="centersList" class="space-y-3"></div>
+    </section>
+
+    <footer class="text-xs text-gray-500 mt-6 text-center">
+      Prototype stores data in browser localStorage under key <code>adl_centers_v1</code>.
+    </footer>
+  </div>
+
+<script>
+const STORAGE_KEY = 'adl_centers_v1';
+let centers = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+
+const loginSection = document.getElementById('loginSection');
+const dashboard = document.getElementById('dashboard');
+
+const adminUser = document.getElementById('adminUser');
+const adminPass = document.getElementById('adminPass');
+const loginBtn = document.getElementById('loginBtn');
+const createCenterBtn = document.getElementById('createCenterBtn');
+const centerIdInput = document.getElementById('centerIdInput');
+const centerPassInput = document.getElementById('centerPassInput');
+const centersList = document.getElementById('centersList');
+const logoutBtn = document.getElementById('logoutBtn');
+const downloadAll = document.getElementById('downloadAll');
+const openCenterPage = document.getElementById('openCenterPage');
+
+// helpers
+const save = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(centers));
+const uid = () => 'id_' + Math.random().toString(36).slice(2,9);
+const todayKey = () => {
+  const d=new Date(); const y=d.getFullYear(); const m=String(d.getMonth()+1).padStart(2,'0'); const day=String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+};
+
+function renderCenters() {
+  centersList.innerHTML = '';
+  const keys = Object.keys(centers);
+  if (keys.length === 0) {
+    centersList.innerHTML = '<p class="text-sm text-gray-500">No centers created yet.</p>';
+    return;
+  }
+  keys.forEach(cid => {
+    const c = centers[cid];
+    const wrapper = document.createElement('div');
+    wrapper.className = 'border p-3 rounded flex items-center justify-between';
+    wrapper.innerHTML = `
+      <div>
+        <div class="font-semibold">${cid}</div>
+        <div class="text-sm text-gray-600">Students: ${c.students.length}</div>
+      </div>
+      <div class="flex gap-2">
+        <button data-cid="${cid}" class="viewBtn bg-blue-500 text-white px-3 py-1 rounded">View</button>
+        <button data-cid="${cid}" class="downloadBtn bg-green-500 text-white px-3 py-1 rounded">Download</button>
+        <button data-cid="${cid}" class="delBtn bg-red-400 text-white px-3 py-1 rounded">Delete</button>
+      </div>`;
+    centersList.appendChild(wrapper);
+  });
+
+  document.querySelectorAll('.viewBtn').forEach(b=>{
+    b.onclick = (e)=> {
+      const cid = e.target.dataset.cid;
+      viewCenterWindow(cid);
+    };
+  });
+  document.querySelectorAll('.downloadBtn').forEach(b=>{
+    b.onclick = (e)=> exportCenter(cid = e.target.dataset.cid);
+  });
+  document.querySelectorAll('.delBtn').forEach(b=>{
+    b.onclick = (e)=> {
+      const cid = e.target.dataset.cid;
+      if (!confirm(`Delete center "${cid}" and all its data?`)) return;
+      delete centers[cid]; save(); renderCenters();
+    };
+  });
+}
+
+function viewCenterWindow(cid) {
+  const c = centers[cid];
+  if (!c) return alert('Center not found');
+  let html = `<h2>Center: ${cid}</h2><p>Students: ${c.students.length}</p><hr/>`;
+  if (c.students.length === 0) html += '<p>No students.</p>';
+  else {
+    c.students.forEach((s,i) => {
+      html += `<div style="margin-top:8px"><strong>${i+1}. ${s.firstName} ${s.lastName}</strong><div>Mobile: ${s.mobile}</div><div>Today's hours: ${(s.attendance && s.attendance[todayKey()])?s.attendance[todayKey()]:0} / 4</div>`;
+      if (s.photo) html += `<div style="margin-top:6px"><img src="${s.photo}" style="max-width:150px;border:1px solid #ddd"/></div>`;
+      html += `</div><hr/>`;
+    });
+  }
+  const w = window.open('', '_blank', 'width=700,height=800');
+  w.document.body.style.fontFamily = 'system-ui, Arial';
+  w.document.body.innerHTML = html;
+}
+
+// create center
+createCenterBtn.addEventListener('click', ()=>{
+  const id = centerIdInput.value.trim();
+  const pass = centerPassInput.value.trim();
+  if (!id || !pass) return alert('Fill Center ID and Password');
+  if (centers[id]) return alert('Center ID exists');
+  centers[id] = { password: pass, students: [] };
+  save();
+  centerIdInput.value = centerPassInput.value = '';
+  renderCenters();
+  alert('Center created');
+});
+
+// admin login
+loginBtn.addEventListener('click', ()=>{
+  const u = adminUser.value.trim();
+  const p = adminPass.value.trim();
+  if (u==='admin' && p==='12345678') {
+    loginSection.classList.add('hidden');
+    dashboard.classList.remove('hidden');
+    renderCenters();
+  } else alert('Invalid admin credentials');
+});
+
+logoutBtn.addEventListener('click', ()=>{
+  dashboard.classList.add('hidden');
+  loginSection.classList.remove('hidden');
+});
+
+// open center.html in new tab
+openCenterPage.addEventListener('click', ()=> {
+  window.open('center.html', '_blank');
+});
+
+// Export helpers
+function exportCenter(cid) {
+  const c = centers[cid];
+  if (!c) return alert('Center not found');
+  const rows = [['Student ID','First Name','Last Name','Parent','Mobile','Photo(dataURL)','Date','Hours']];
+  c.students.forEach(s => {
+    const att = s.attendance || {};
+    if (Object.keys(att).length === 0) rows.push([s.id, s.firstName, s.lastName, s.parentName, s.mobile, s.photo||'', '', '']);
+    else Object.keys(att).forEach(d => rows.push([s.id, s.firstName, s.lastName, s.parentName, s.mobile, s.photo||'', d, att[d]]));
+  });
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, cid.length>28?cid.slice(0,28):cid);
+  XLSX.writeFile(wb, `center_${cid}_data_${new Date().toISOString().slice(0,10)}.xlsx`);
+}
+
+downloadAll.addEventListener('click', ()=>{
+  const wb = XLSX.utils.book_new();
+  const summary = [['Center ID','Student Count']];
+  Object.keys(centers).forEach(cid => summary.push([cid, centers[cid].students.length]));
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(summary), 'Summary');
+  Object.keys(centers).forEach(cid => {
+    const c = centers[cid];
+    const rows = [['Student ID','First Name','Last Name','Parent','Mobile','Photo(dataURL)','Date','Hours']];
+    c.students.forEach(s => {
+      const att = s.attendance || {};
+      if (Object.keys(att).length === 0) rows.push([s.id, s.firstName, s.lastName, s.parentName, s.mobile, s.photo||'', '', '']);
+      else Object.keys(att).forEach(d => rows.push([s.id, s.firstName, s.lastName, s.parentName, s.mobile, s.photo||'', d, att[d]]));
+    });
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    const sheetName = cid.length>28?cid.slice(0,28):cid;
+    XLSX.utils.book_append_sheet(wb, ws, sheetName);
+  });
+  XLSX.writeFile(wb, `aadhaar_all_centers_${new Date().toISOString().slice(0,10)}.xlsx`);
+});
+
+// initial render
+renderCenters();
+</script>
+</body>
+</html>

@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Aadhaar Digital Literacy — Center</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen p-6">
+  <div class="max-w-4xl mx-auto">
+    <header class="mb-6 text-center">
+      <h1 class="text-2xl font-bold text-blue-700">Aadhaar Digital Literacy — Center Portal</h1>
+      <p class="text-sm text-gray-600 mt-1">Login with the Center ID & Password created by Admin.</p>
+      <div class="mt-2">
+        <a href="admin.html" class="text-sm underline text-indigo-600">Back to Admin Page</a>
+      </div>
+    </header>
+
+    <!-- Center Login -->
+    <section id="centerLogin" class="bg-white p-6 rounded shadow max-w-md mx-auto">
+      <h2 class="text-lg font-semibold mb-3">Center Login</h2>
+      <input id="cid" placeholder="Center ID" class="w-full border p-2 mb-3 rounded" />
+      <input id="cpass" placeholder="Center Password" type="password" class="w-full border p-2 mb-3 rounded" />
+      <div class="flex gap-2">
+        <button id="cLoginBtn" class="flex-1 bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Login</button>
+        <button id="cBackBtn" class="flex-1 bg-gray-200 py-2 rounded hover:bg-gray-300">Back</button>
+      </div>
+    </section>
+
+    <!-- Center Dashboard -->
+    <section id="centerDashboard" class="hidden bg-white p-6 rounded shadow mt-6">
+      <div class="flex justify-between items-center mb-4">
+        <h2 id="centerTitle" class="text-xl font-semibold">Center: —</h2>
+        <div class="flex gap-2">
+          <button id="exportCenter" class="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700">Export Center Excel</button>
+          <button id="centerLogout" class="bg-gray-300 px-3 py-1 rounded hover:bg-gray-400">Logout</button>
+        </div>
+      </div>
+
+      <!-- Register Student with camera -->
+      <div class="mb-4 border p-4 rounded grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <h3 class="font-semibold mb-2">Register Student</h3>
+          <input id="firstName" placeholder="First Name" class="w-full border p-2 mb-2 rounded" />
+          <input id="lastName" placeholder="Last Name" class="w-full border p-2 mb-2 rounded" />
+          <input id="parentName" placeholder="Father/Mother/Spouse Name" class="w-full border p-2 mb-2 rounded" />
+          <input id="mobile" placeholder="Mobile (10 digits)" class="w-full border p-2 mb-2 rounded" />
+          <div class="flex gap-2 mt-2">
+            <button id="openCam" class="bg-indigo-600 text-white px-3 py-2 rounded hover:bg-indigo-700">Open Camera</button>
+            <button id="snap" class="bg-indigo-400 text-white px-3 py-2 rounded hover:bg-indigo-500">Capture</button>
+            <button id="registerBtn" class="bg-purple-600 text-white px-3 py-2 rounded hover:bg-purple-700">Register</button>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="font-semibold mb-2">Camera Preview</h3>
+          <video id="video" autoplay playsinline class="w-full rounded border mb-2" style="height:260px;object-fit:cover;background:#000"></video>
+          <canvas id="canvas" class="hidden"></canvas>
+          <img id="preview" class="w-full rounded border" alt="preview" />
+        </div>
+      </div>
+
+      <!-- Students list with attendance -->
+      <div id="studentsArea" class="space-y-3"></div>
+    </section>
+
+    <footer class="text-xs text-gray-500 mt-6 text-center">
+      Data stored locally in browser under <code>adl_centers_v1</code>. Use Admin to manage centers across devices or connect a backend later.
+    </footer>
+  </div>
+
+<script>
+const STORAGE_KEY = 'adl_centers_v1';
+let centers = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+let currentCenter = null;
+let videoStream = null;
+
+const centerLogin = document.getElementById('centerLogin');
+const centerDashboard = document.getElementById('centerDashboard');
+
+const cidInput = document.getElementById('cid');
+const cpassInput = document.getElementById('cpass');
+const cLoginBtn = document.getElementById('cLoginBtn');
+const cBackBtn = document.getElementById('cBackBtn');
+const centerTitle = document.getElementById('centerTitle');
+const centerLogout = document.getElementById('centerLogout');
+const exportCenter = document.getElementById('exportCenter');
+
+const openCam = document.getElementById('openCam');
+const snap = document.getElementById('snap');
+const registerBtn = document.getElementById('registerBtn');
+
+const video = document.getElementById('video');
+const canvas = document.getElementById('canvas');
+const preview = document.getElementById('preview');
+
+const firstName = document.getElementById('firstName');
+const lastName = document.getElementById('lastName');
+const parentName = document.getElementById('parentName');
+const mobile = document.getElementById('mobile');
+const studentsArea = document.getElementById('studentsArea');
+
+const uid = () => 'id_' + Math.random().toString(36).slice(2,9);
+const save = ()=> localStorage.setItem(STORAGE_KEY, JSON.stringify(centers));
+const todayKey = ()=>{ const d=new Date(); const y=d.getFullYear(); const m=String(d.getMonth()+1).padStart(2,'0'); const day=String(d.getDate()).padStart(2,'0'); return `${y}-${m}-${day}`; };
+
+// center login
+cLoginBtn.addEventListener('click', ()=> {
+  centers = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); // refresh
+  const id = cidInput.value.trim();
+  const pass = cpassInput.value.trim();
+  if (!id || !pass) return alert('Fill Center ID & Password');
+  if (!centers[id]) return alert('Center not found (ask admin to create it)');
+  if (centers[id].password !== pass) return alert('Wrong password');
+  currentCenter = id;
+  centerLogin.classList.add('hidden');
+  centerDashboard.classList.remove('hidden');
+  centerTitle.innerText = `Center: ${currentCenter}`;
+  renderStudents();
+});
+
+// back (open admin page)
+cBackBtn.addEventListener('click', ()=> window.location.href = 'admin.html');
+
+// camera open
+openCam.addEventListener('click', async ()=> {
+  if (videoStream) return;
+  try {
+    videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+    video.srcObject = videoStream;
+  } catch (err) {
+    alert('Camera access denied or not available.');
+  }
+});
+
+// capture
+snap.addEventListener('click', ()=> {
+  if (!videoStream) return alert('Open camera first');
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  const data = canvas.toDataURL('image/png');
+  preview.src = data;
+});
+
+// register student
+registerBtn.addEventListener('click', ()=> {
+  if (!currentCenter) return alert('Login first');
+  const f = firstName.value.trim();
+  const l = lastName.value.trim();
+  const p = parentName.value.trim();
+  const m = mobile.value.trim();
+  if (!f || !l || !p || !m) return alert('All fields required');
+  if (!/^\d{10}$/.test(m)) return alert('Mobile must be 10 digits');
+  const photo = preview.src || '';
+  const student = { id: uid(), firstName: f, lastName: l, parentName: p, mobile: m, photo: photo, attendance: {} };
+  centers[currentCenter].students.push(student);
+  save();
+  firstName.value = lastName.value = parentName.value = mobile.value = '';
+  preview.src = '';
+  renderStudents();
+  alert('Student registered');
+});
+
+// render students
+function renderStudents() {
+  studentsArea.innerHTML = '';
+  const c = centers[currentCenter];
+  if (!c || c.students.length === 0) {
+    studentsArea.innerHTML = '<p class="text-sm text-gray-500">No students yet.</p>';
+    return;
+  }
+  c.students.forEach(s => {
+    const card = document.createElement('div');
+    card.className = 'border p-3 rounded flex gap-3 items-center';
+    const photo = s.photo ? `<img src="${s.photo}" class="w-20 h-20 object-cover rounded border">` : `<div class="w-20 h-20 bg-gray-100 rounded flex items-center justify-center text-sm">No Photo</div>`;
+    const today = todayKey();
+    const hours = (s.attendance && s.attendance[today]) ? s.attendance[today] : 0;
+    card.innerHTML = `
+      <div>${photo}</div>
+      <div class="flex-1">
+        <div class="font-semibold">${s.firstName} ${s.lastName}</div>
+        <div class="text-sm text-gray-600">Parent: ${s.parentName} • ${s.mobile}</div>
+        <div class="text-sm mt-2">Today's hours: <strong id="h_${s.id}">${hours}</strong> / 4</div>
+      </div>
+      <div class="flex flex-col gap-2">
+        <button data-id="${s.id}" class="addHour bg-blue-500 text-white px-3 py-1 rounded">+1 hour</button>
+        <button data-id="${s.id}" class="resetDay bg-yellow-400 text-white px-3 py-1 rounded">Reset</button>
+      </div>`;
+    studentsArea.appendChild(card);
+  });
+
+  document.querySelectorAll('.addHour').forEach(b => b.onclick = (e)=> {
+    const sid = e.target.dataset.id; addHour(sid);
+  });
+  document.querySelectorAll('.resetDay').forEach(b => b.onclick = (e)=> {
+    const sid = e.target.dataset.id; resetDay(sid);
+  });
+}
+
+function addHour(sid) {
+  const c = centers[currentCenter];
+  const s = c.students.find(x => x.id === sid);
+  if (!s) return;
+  const day = todayKey();
+  const curr = s.attendance[day] || 0;
+  if (curr >= 4) return alert('Max 4 hours reached for today');
+  s.attendance[day] = curr + 1;
+  save();
+  renderStudents();
+}
+
+function resetDay(sid) {
+  if (!confirm('Reset today hours for this student?')) return;
+  const c = centers[currentCenter];
+  const s = c.students.find(x => x.id === sid);
+  if (!s) return;
+  s.attendance[todayKey()] = 0;
+  save();
+  renderStudents();
+}
+
+centerLogout.addEventListener('click', ()=> {
+  stopCamera();
+  currentCenter = null;
+  centerDashboard.classList.add('hidden');
+  centerLogin.classList.remove('hidden');
+});
+
+function stopCamera() {
+  if (videoStream) {
+    videoStream.getTracks().forEach(t => t.stop());
+    videoStream = null;
+    video.srcObject = null;
+  }
+}
+
+// export center
+exportCenter.addEventListener('click', ()=> {
+  const c = centers[currentCenter];
+  if (!c) return alert('No center data');
+  const rows = [['Student ID','First','Last','Parent','Mobile','Photo(dataURL)','Date','Hours']];
+  c.students.forEach(s => {
+    const att = s.attendance || {};
+    if (Object.keys(att).length === 0) rows.push([s.id, s.firstName, s.lastName, s.parentName, s.mobile, s.photo||'', '', '']);
+    else Object.keys(att).forEach(d => rows.push([s.id, s.firstName, s.lastName, s.parentName, s.mobile, s.photo||'', d, att[d]]));
+  });
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, currentCenter.length>28?currentCenter.slice(0,28):currentCenter);
+  XLSX.writeFile(wb, `center_${currentCenter}_data_${new Date().toISOString().slice(0,10)}.xlsx`);
+});
+
+// ensure centers state refreshed on page show
+window.addEventListener('pageshow', ()=> { centers = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); });
+
+// save before unload
+window.addEventListener('beforeunload', ()=> save());
+</script>
+</body>
+</html>

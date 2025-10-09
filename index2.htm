@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Aadhaar Digital Literacy — Portal (Prototype)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- SheetJS for Excel export -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen p-6">
+  <div class="max-w-5xl mx-auto">
+
+    <!-- Header -->
+    <header class="mb-6">
+      <h1 class="text-3xl font-bold text-center text-blue-700">Aadhaar Digital Literacy Portal (Prototype)</h1>
+      <p class="text-center text-sm text-gray-600 mt-1">Admin = <code>admin</code> / <code>12345678</code></p>
+    </header>
+
+    <!-- Admin Login -->
+    <section id="adminLogin" class="bg-white p-6 rounded-lg shadow mb-6 max-w-md mx-auto">
+      <h2 class="text-xl font-semibold mb-3">Admin / Super Admin Login</h2>
+      <input id="adminUsername" class="w-full border p-2 mb-3 rounded" placeholder="Username" />
+      <input id="adminPassword" class="w-full border p-2 mb-3 rounded" placeholder="Password" type="password" />
+      <div class="flex gap-2">
+        <button id="adminLoginBtn" class="flex-1 bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Login as Admin</button>
+        <button id="goCenterLogin" class="flex-1 bg-gray-200 py-2 rounded hover:bg-gray-300">Center Login</button>
+      </div>
+    </section>
+
+    <!-- Admin Dashboard -->
+    <section id="adminDashboard" class="hidden bg-white p-6 rounded-lg shadow mb-6">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-semibold">Admin Dashboard</h2>
+        <div class="flex gap-2">
+          <button id="exportExcel" class="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700">Download ALL Data (Excel)</button>
+          <button id="adminLogout" class="bg-gray-300 px-3 py-1 rounded hover:bg-gray-400">Logout</button>
+        </div>
+      </div>
+
+      <!-- Create Center -->
+      <div class="mb-4 border p-4 rounded">
+        <h3 class="font-semibold mb-2">Create Center</h3>
+        <div class="flex gap-2">
+          <input id="newCenterId" placeholder="Center ID" class="flex-1 border p-2 rounded" />
+          <input id="newCenterPass" placeholder="Center Password" class="flex-1 border p-2 rounded" />
+          <button id="createCenter" class="bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700">Create</button>
+        </div>
+      </div>
+
+      <!-- Centers list -->
+      <div id="centersContainer" class="space-y-4"></div>
+    </section>
+
+    <!-- Center Login -->
+    <section id="centerLogin" class="hidden bg-white p-6 rounded-lg shadow mb-6 max-w-md mx-auto">
+      <h2 class="text-xl font-semibold mb-3">Center Login</h2>
+      <input id="centerLoginIdInput" class="w-full border p-2 mb-3 rounded" placeholder="Center ID" />
+      <input id="centerLoginPassInput" class="w-full border p-2 mb-3 rounded" placeholder="Center Password" />
+      <div class="flex gap-2">
+        <button id="centerLoginBtn" class="flex-1 bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Login to Center</button>
+        <button id="backToAdmin" class="flex-1 bg-gray-200 py-2 rounded hover:bg-gray-300">Back</button>
+      </div>
+    </section>
+
+    <!-- Center Dashboard / Student Registration -->
+    <section id="centerDashboard" class="hidden bg-white p-6 rounded-lg shadow mb-6">
+      <div class="flex justify-between items-center mb-4">
+        <h2 id="centerTitle" class="text-xl font-semibold">Center: —</h2>
+        <div class="flex gap-2">
+          <button id="centerLogout" class="bg-gray-300 px-3 py-1 rounded hover:bg-gray-400">Logout</button>
+        </div>
+      </div>
+
+      <!-- Register Student with live photo -->
+      <div class="mb-4 border p-4 rounded grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <h3 class="font-semibold mb-2">Register Student</h3>
+          <input id="stuFirst" placeholder="First Name" class="w-full border p-2 mb-2 rounded" />
+          <input id="stuLast" placeholder="Last Name" class="w-full border p-2 mb-2 rounded" />
+          <input id="stuParent" placeholder="Father/Mother/Spouse Name" class="w-full border p-2 mb-2 rounded" />
+          <input id="stuMobile" placeholder="Mobile (10 digits)" class="w-full border p-2 mb-2 rounded" />
+          <div class="flex gap-2">
+            <button id="capturePhotoBtn" class="bg-indigo-600 text-white px-3 py-2 rounded hover:bg-indigo-700">Open Camera</button>
+            <button id="takePhotoBtn" class="bg-indigo-400 text-white px-3 py-2 rounded hover:bg-indigo-500">Capture</button>
+            <button id="registerStudentBtn" class="bg-purple-600 text-white px-3 py-2 rounded hover:bg-purple-700">Register Student</button>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="font-semibold mb-2">Camera & Preview</h3>
+          <video id="video" autoplay playsinline class="w-full rounded border mb-2" style="height:240px;object-fit:cover;background:#000"></video>
+          <canvas id="canvas" class="hidden"></canvas>
+          <img id="photoPreview" class="w-full rounded border" alt="Preview" />
+        </div>
+      </div>
+
+      <!-- Student list with attendance controls -->
+      <div id="centerStudents" class="space-y-3"></div>
+    </section>
+
+    <!-- Footer / notes -->
+    <footer class="text-xs text-gray-500 mt-6 text-center">
+      Prototype stores data in the browser (localStorage). Use admin download to export all data into an Excel file.
+    </footer>
+  </div>
+
+<script>
+/* ============================
+   Data model (localStorage)
+   centers = {
+     centerId: {
+       password: "...",
+       students: [
+         {
+           id: "uuid",
+           firstName, lastName, parentName, mobile,
+           photo: dataURL,
+           attendance: { "YYYY-MM-DD": hoursNumber } // hoursNumber 0..4
+         },...
+       ]
+     }
+   }
+   ============================ */
+
+const STORAGE_KEY = 'adl_centers_v1';
+let centers = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+let currentCenter = null; // centerId when logged in as a center
+let videoStream = null;
+
+// helpers
+const save = () => { localStorage.setItem(STORAGE_KEY, JSON.stringify(centers)); };
+const uid = () => 'id_' + Math.random().toString(36).slice(2,9);
+const todayKey = () => {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+};
+
+// UI references
+const adminLogin = document.getElementById('adminLogin');
+const adminDashboard = document.getElementById('adminDashboard');
+const centerLogin = document.getElementById('centerLogin');
+const centerDashboard = document.getElementById('centerDashboard');
+
+const adminLoginBtn = document.getElementById('adminLoginBtn');
+const adminLogout = document.getElementById('adminLogout');
+const goCenterLogin = document.getElementById('goCenterLogin');
+const backToAdmin = document.getElementById('backToAdmin');
+
+const createCenterBtn = document.getElementById('createCenter');
+const centersContainer = document.getElementById('centersContainer');
+const newCenterId = document.getElementById('newCenterId');
+const newCenterPass = document.getElementById('newCenterPass');
+
+const exportExcelBtn = document.getElementById('exportExcel');
+
+const centerLoginBtn = document.getElementById('centerLoginBtn');
+const centerLoginIdInput = document.getElementById('centerLoginIdInput');
+const centerLoginPassInput = document.getElementById('centerLoginPassInput');
+const centerTitle = document.getElementById('centerTitle');
+const centerStudentsDiv = document.getElementById('centerStudents');
+const centerLogout = document.getElementById('centerLogout');
+
+const video = document.getElementById('video');
+const canvas = document.getElementById('canvas');
+const photoPreview = document.getElementById('photoPreview');
+const capturePhotoBtn = document.getElementById('capturePhotoBtn');
+const takePhotoBtn = document.getElementById('takePhotoBtn');
+
+const registerStudentBtn = document.getElementById('registerStudentBtn');
+const stuFirst = document.getElementById('stuFirst');
+const stuLast = document.getElementById('stuLast');
+const stuParent = document.getElementById('stuParent');
+const stuMobile = document.getElementById('stuMobile');
+
+// show centers in admin dashboard
+function renderAdminCenters() {
+  centersContainer.innerHTML = '';
+  const keys = Object.keys(centers);
+  if (keys.length === 0) {
+    centersContainer.innerHTML = '<p class="text-sm text-gray-500">No centers created yet.</p>';
+    return;
+  }
+  keys.forEach(cid => {
+    const c = centers[cid];
+    const box = document.createElement('div');
+    box.className = 'border p-3 rounded flex flex-col md:flex-row md:justify-between md:items-center gap-3';
+    box.innerHTML = `
+      <div>
+        <div class="font-semibold">${cid}</div>
+        <div class="text-sm text-gray-600">Students: ${c.students.length}</div>
+      </div>
+      <div class="flex gap-2">
+        <button data-cid="${cid}" class="viewCenterBtn bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">View</button>
+        <button data-cid="${cid}" class="downloadCenterBtn bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600">Download</button>
+        <button data-cid="${cid}" class="delCenterBtn bg-red-400 text-white px-3 py-1 rounded hover:bg-red-500">Delete</button>
+      </div>
+    `;
+    centersContainer.appendChild(box);
+  });
+
+  // attach handlers
+  document.querySelectorAll('.viewCenterBtn').forEach(b => {
+    b.onclick = (e) => {
+      const cid = e.target.dataset.cid;
+      showCenterDetailsModal(cid);
+    };
+  });
+  document.querySelectorAll('.downloadCenterBtn').forEach(b => {
+    b.onclick = (e) => {
+      const cid = e.target.dataset.cid;
+      exportCenterAsExcel(cid);
+    };
+  });
+  document.querySelectorAll('.delCenterBtn').forEach(b => {
+    b.onclick = (e) => {
+      const cid = e.target.dataset.cid;
+      if (!confirm(`Delete center "${cid}" and all its data?`)) return;
+      delete centers[cid];
+      save();
+      renderAdminCenters();
+    };
+  });
+}
+
+// admin login
+adminLoginBtn.addEventListener('click', () => {
+  const user = document.getElementById('adminUsername').value.trim();
+  const pass = document.getElementById('adminPassword').value.trim();
+  if (user === 'admin' && pass === '12345678') {
+    adminLogin.classList.add('hidden');
+    adminDashboard.classList.remove('hidden');
+    renderAdminCenters();
+  } else {
+    alert('Invalid admin credentials');
+  }
+});
+
+// admin logout
+adminLogout.addEventListener('click', () => {
+  adminDashboard.classList.add('hidden');
+  adminLogin.classList.remove('hidden');
+});
+
+// go to center login
+goCenterLogin.addEventListener('click', () => {
+  adminLogin.classList.add('hidden');
+  centerLogin.classList.remove('hidden');
+});
+
+// back to admin from center login
+backToAdmin.addEventListener('click', () => {
+  centerLogin.classList.add('hidden');
+  adminLogin.classList.remove('hidden');
+});
+
+// create center
+createCenterBtn.addEventListener('click', () => {
+  const id = newCenterId.value.trim();
+  const pass = newCenterPass.value.trim();
+  if (!id || !pass) return alert('Please fill Center ID and password');
+  if (centers[id]) return alert('Center ID already exists');
+  centers[id] = { password: pass, students: [] };
+  save();
+  newCenterId.value = newCenterPass.value = '';
+  renderAdminCenters();
+  alert('Center created');
+});
+
+// center login
+centerLoginBtn.addEventListener('click', () => {
+  const id = centerLoginIdInput.value.trim();
+  const pass = centerLoginPassInput.value.trim();
+  if (!centers[id]) return alert('Center not found');
+  if (centers[id].password !== pass) return alert('Wrong password');
+  // login
+  currentCenter = id;
+  centerLogin.classList.add('hidden');
+  centerDashboard.classList.remove('hidden');
+  centerTitle.innerText = `Center: ${currentCenter}`;
+  renderCenterStudents();
+});
+
+// center logout
+centerLogout.addEventListener('click', () => {
+  stopCamera();
+  currentCenter = null;
+  centerDashboard.classList.add('hidden');
+  centerLogin.classList.remove('hidden');
+});
+
+// camera controls
+capturePhotoBtn.addEventListener('click', async () => {
+  if (videoStream) return; // already open
+  try {
+    videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+    video.srcObject = videoStream;
+  } catch (err) {
+    alert('Camera access denied or not available.');
+  }
+});
+takePhotoBtn.addEventListener('click', () => {
+  if (!videoStream) return alert('Open camera first');
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  const dataURL = canvas.toDataURL('image/png');
+  photoPreview.src = dataURL;
+});
+
+// register student
+registerStudentBtn.addEventListener('click', () => {
+  if (!currentCenter) return alert('Login to a center first');
+  const f = stuFirst.value.trim();
+  const l = stuLast.value.trim();
+  const p = stuParent.value.trim();
+  const m = stuMobile.value.trim();
+  if (!f || !l || !p || !m) return alert('All fields are required');
+  if (!/^\d{10}$/.test(m)) return alert('Mobile must be 10 digits');
+  const photo = photoPreview.src || null;
+  const student = {
+    id: uid(),
+    firstName: f, lastName: l, parentName: p, mobile: m,
+    photo: photo,
+    attendance: {} // date: hours
+  };
+  centers[currentCenter].students.push(student);
+  save();
+  stuFirst.value = stuLast.value = stuParent.value = stuMobile.value = '';
+  photoPreview.src = '';
+  renderCenterStudents();
+  alert('Student registered');
+});
+
+// render students in center dashboard
+function renderCenterStudents() {
+  centerStudentsDiv.innerHTML = '';
+  const c = centers[currentCenter];
+  if (!c || c.students.length === 0) {
+    centerStudentsDiv.innerHTML = '<p class="text-sm text-gray-500">No students registered yet.</p>';
+    return;
+  }
+  c.students.forEach(s => {
+    const card = document.createElement('div');
+    card.className = 'border p-3 rounded flex gap-3 items-center';
+    const photoHtml = s.photo ? `<img src="${s.photo}" class="w-20 h-20 object-cover rounded border">` : `<div class="w-20 h-20 bg-gray-100 flex items-center justify-center rounded text-sm">No Photo</div>`;
+    const today = todayKey();
+    const todayHours = (s.attendance && s.attendance[today]) ? s.attendance[today] : 0;
+    card.innerHTML = `
+      <div>${photoHtml}</div>
+      <div class="flex-1">
+        <div class="font-semibold">${s.firstName} ${s.lastName}</div>
+        <div class="text-sm text-gray-600">Parent: ${s.parentName} • Mobile: ${s.mobile}</div>
+        <div class="text-sm text-gray-700 mt-2">Today's hours: <strong id="hours_${s.id}">${todayHours}</strong> / 4</div>
+      </div>
+      <div class="flex flex-col gap-2">
+        <button data-sid="${s.id}" class="addHourBtn bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">+1 hour</button>
+        <button data-sid="${s.id}" class="resetDayBtn bg-yellow-400 text-white px-3 py-1 rounded hover:bg-yellow-500">Reset today</button>
+      </div>
+    `;
+    centerStudentsDiv.appendChild(card);
+  });
+
+  // add handlers
+  document.querySelectorAll('.addHourBtn').forEach(b => {
+    b.onclick = (e) => {
+      const sid = e.target.dataset.sid;
+      addHourToStudent(sid);
+    };
+  });
+  document.querySelectorAll('.resetDayBtn').forEach(b => {
+    b.onclick = (e) => {
+      const sid = e.target.dataset.sid;
+      resetStudentToday(sid);
+    };
+  });
+}
+
+function addHourToStudent(sid) {
+  const c = centers[currentCenter];
+  const s = c.students.find(x => x.id === sid);
+  if (!s) return;
+  const day = todayKey();
+  const current = s.attendance[day] || 0;
+  if (current >= 4) return alert('Maximum 4 hours already recorded for today for this student.');
+  s.attendance[day] = current + 1;
+  save();
+  renderCenterStudents();
+}
+
+function resetStudentToday(sid) {
+  if (!confirm('Reset today\'s attendance hours to 0 for this student?')) return;
+  const c = centers[currentCenter];
+  const s = c.students.find(x => x.id === sid);
+  if (!s) return;
+  const day = todayKey();
+  s.attendance[day] = 0;
+  save();
+  renderCenterStudents();
+}
+
+// stop camera stream
+function stopCamera() {
+  if (videoStream) {
+    videoStream.getTracks().forEach(t => t.stop());
+    videoStream = null;
+    video.srcObject = null;
+  }
+}
+
+// Admin: view center details modal (simple new tab-like window)
+function showCenterDetailsModal(cid) {
+  const c = centers[cid];
+  if (!c) return alert('Center not found');
+  let html = `<h3 style="font-family:system-ui">Center: ${cid}</h3><div style="font-family:system-ui">Students: ${c.students.length}</div><hr/>`;
+  if (c.students.length === 0) {
+    html += '<div style="font-family:system-ui">No students</div>';
+  } else {
+    c.students.forEach((s,i) => {
+      html += `<div style="font-family:system-ui;margin-top:8px"><strong>${i+1}. ${s.firstName} ${s.lastName}</strong><div>Mobile: ${s.mobile}</div>`;
+      html += `<div>Today's hours: ${(s.attendance && s.attendance[todayKey()])?s.attendance[todayKey()]:0} / 4</div>`;
+      if (s.photo) {
+        html += `<div style="margin-top:6px"><img src="${s.photo}" style="max-width:150px;border:1px solid #ddd"/></div>`;
+      }
+      html += '</div><hr/>';
+    });
+  }
+  const w = window.open("", "_blank", "width=600,height=700");
+  w.document.body.style.fontFamily = 'system-ui, Arial';
+  w.document.body.innerHTML = html;
+}
+
+// Export a single center as Excel
+function exportCenterAsExcel(cid) {
+  const c = centers[cid];
+  if (!c) return alert('Center not found');
+  // Prepare rows
+  const rows = [];
+  rows.push(['Student ID','First Name','Last Name','Parent Name','Mobile','Photo (dataURL)','Date','Hours']);
+  c.students.forEach(s => {
+    const att = s.attendance || {};
+    if (Object.keys(att).length === 0) {
+      rows.push([s.id, s.firstName, s.lastName, s.parentName, s.mobile, s.photo||'', '','']);
+    } else {
+      Object.keys(att).forEach(date => {
+        rows.push([s.id, s.firstName, s.lastName, s.parentName, s.mobile, s.photo||'', date, att[date]]);
+      });
+    }
+  });
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, cid);
+  XLSX.writeFile(wb, `center_${cid}_data.xlsx`);
+}
+
+// Admin: export ALL centers as workbook
+exportExcelBtn.addEventListener('click', () => {
+  const wb = XLSX.utils.book_new();
+  // master summary sheet
+  const summary = [['Center ID','Student Count']];
+  Object.keys(centers).forEach(cid => summary.push([cid, centers[cid].students.length]));
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(summary), 'Summary');
+
+  // one sheet per center
+  Object.keys(centers).forEach(cid => {
+    const c = centers[cid];
+    const rows = [];
+    rows.push(['Student ID','First Name','Last Name','Parent Name','Mobile','Photo (dataURL)','Date','Hours']);
+    c.students.forEach(s => {
+      const att = s.attendance || {};
+      if (Object.keys(att).length === 0) {
+        rows.push([s.id, s.firstName, s.lastName, s.parentName, s.mobile, s.photo||'', '','']);
+      } else {
+        Object.keys(att).forEach(date => {
+          rows.push([s.id, s.firstName, s.lastName, s.parentName, s.mobile, s.photo||'', date, att[date]]);
+        });
+      }
+    });
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    // sheet names must be <=31 chars
+    const sheetName = cid.length > 28 ? cid.slice(0,28) : cid;
+    XLSX.utils.book_append_sheet(wb, ws, sheetName);
+  });
+
+  XLSX.writeFile(wb, `aadhaar_all_centers_${new Date().toISOString().slice(0,10)}.xlsx`);
+});
+
+// initial render
+renderAdminCenters();
+
+// Ensure we save before page unload (best-effort)
+window.addEventListener('beforeunload', () => {
+  save();
+  stopCamera();
+});
+</script>
+</body>
+</html>
